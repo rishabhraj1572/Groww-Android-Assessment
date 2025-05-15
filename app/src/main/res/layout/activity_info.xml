@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+        <!-- Top Header -->
+        <LinearLayout
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:paddingBottom="16dp">
+
+            <!-- Company logo -->
+            <ImageView
+                android:id="@+id/imgLogo"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_launcher_foreground"
+                android:scaleType="centerCrop"
+                android:layout_marginEnd="12dp" />
+
+            <!-- Company info -->
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_marginEnd="10dp"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tvCompanyName"
+                    android:text="APPLE INC"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/tvSymbol"
+                    android:text="AAPL, Common Stock"
+                    android:textSize="14sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/tvExchange"
+                    android:text="NSQ"
+                    android:textSize="12sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Price and change -->
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end">
+
+                <TextView
+                    android:id="@+id/tvPrice"
+                    android:text="$177.15"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/tvChange"
+                    android:text="+0.41%"
+                    android:textColor="#2E7D32"
+                    android:textSize="14sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Graph placeholder -->
+        <View
+            android:id="@+id/graphPlaceholder"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="#EEEEEE"
+            android:layout_marginBottom="8dp" />
+        <!-- About Section -->
+        <TextView
+            android:id="@+id/aboutTitle"
+            android:text="About APPLE INC"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginStart="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvAbout"
+            android:text="Apple Inc. is an American multinational technology company..."
+            android:textSize="14sp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Tags -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/industry"
+                android:text="Industry: Electronic computers"
+                android:background="#FFDDDD"
+                android:textSize="12sp"
+                android:padding="6dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/sector"
+                android:text="Sector: Technology"
+                android:background="#DDFFDD"
+                android:textSize="12sp"
+                android:padding="6dp"
+                android:layout_marginBottom="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Metrics -->
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:columnCount="3"
+            android:rowCount="3"
+            android:alignmentMode="alignMargins"
+            android:columnOrderPreserved="false"
+            android:layout_marginBottom="32dp">
+
+            <TextView
+                android:id="@+id/low52"
+                android:text="52-Week Low\n$123.64"
+                android:padding="8dp"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/currPrice"
+                android:text="Current Price\n$177.15"
+                android:padding="8dp"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/high52"
+                android:text="52-Week High\n$197.96"
+                android:padding="8dp"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/marketCap"
+                android:text="Market Cap\n$2.77T"
+                android:padding="8dp"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/peRatio"
+                android:text="P/E Ratio\n27.77"
+                android:padding="8dp"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/beta"
+                android:text="Beta\n1.308"
+                android:padding="8dp"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/divYield"
+                android:text="Dividend Yield\n0.54%"
+                android:padding="8dp"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/profitMargin"
+                android:text="Profit Margin\n0.247"
+                android:padding="8dp"
+                android:textSize="13sp"/>
+        </GridLayout>
+    </LinearLayout>
+</ScrollView>
