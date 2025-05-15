@@ -5,20 +5,14 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +23,10 @@ import okhttp3.Request
 import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
+
+    private val PREFS_NAME = "stock_prefs"
+    private val RECENT_SEARCHES_KEY = "recent_searches"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -38,13 +36,41 @@ class MainActivity : AppCompatActivity() {
         val stockInfoApi="https://www.alphavantage.co/query?function=OVERVIEW&symbol=$symbol&apikey=C34A4OLXI65MG5IS"
 
 
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val recentSearch = prefs.getStringSet(RECENT_SEARCHES_KEY, emptySet())?.toMutableList() ?: mutableListOf()
+
+        val recentAdapter = RecentAdapter(recentSearch.take(3)) { stock ->
+            Toast.makeText(this@MainActivity, "Gainer clicked: ${stock}", Toast.LENGTH_SHORT).show()
+            val i=Intent(this@MainActivity,StockInformation::class.java)
+            i.putExtra("symbol",stock)
+//            i.putExtra("price",stock.price)
+//            i.putExtra("change",stock.change)
+            startActivity(i)
+        }
+
+        findViewById<RecyclerView>(R.id.rvRecentlySearched).apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = recentAdapter
+        }
+
+
+        val viewAllRecent=findViewById<TextView>(R.id.tvRecentlySearchedViewAll)
+        val i = Intent(this@MainActivity,ViewAll::class.java)
+        viewAllRecent.setOnClickListener{
+            i.putExtra("header","Recent Search")
+            i.putExtra("data",ArrayList(recentSearch))
+            i.putExtra("isRecent", true)
+            startActivity(i)
+        }
+
+
         val etSearch = findViewById<AutoCompleteTextView>(R.id.etSearch)
         val suggestionAdapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line)
         val suggestionList = mutableListOf<SymbolSuggestion>()
 
         etSearch.setAdapter(suggestionAdapter)
 
-        etSearch.threshold = 1 // Start suggesting from 1 letter
+        etSearch.threshold = 1
 
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
@@ -71,6 +97,7 @@ class MainActivity : AppCompatActivity() {
             val selected = suggestionList[position]
             Toast.makeText(this, "Selected: ${selected.symbol}", Toast.LENGTH_SHORT).show()
             etSearch.setText(selected.symbol)
+            saveSymbolToRecentList(selected.symbol)
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -118,12 +145,14 @@ class MainActivity : AppCompatActivity() {
             viewAllGainer.setOnClickListener{
                 i.putExtra("header","Top Gainer")
                 i.putExtra("data", ArrayList(gainersAll))
+                i.putExtra("isRecent", false)
                 startActivity(i)
             }
 
             viewAllLoser.setOnClickListener{
                 i.putExtra("header","Top Loser")
                 i.putExtra("data", ArrayList(losersAll))
+                i.putExtra("isRecent", false)
                 startActivity(i)
             }
 
@@ -131,6 +160,19 @@ class MainActivity : AppCompatActivity() {
 
 
 
+    }
+
+    private fun saveSymbolToRecentList(symbol: String) {
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val storedList = prefs.getStringSet(RECENT_SEARCHES_KEY, emptySet())?.toMutableList() ?: mutableListOf()
+
+
+        storedList.remove(symbol)
+        storedList.add(0,symbol)
+
+        Log.d("History List",storedList.toString())
+
+        prefs.edit().putStringSet(RECENT_SEARCHES_KEY, storedList.toSet()).apply()
     }
 
     fun fetchSuggestions(query: String, apiKey: String, callback: (List<SymbolSuggestion>) -> Unit) {
