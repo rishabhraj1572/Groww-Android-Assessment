@@ -2,8 +2,15 @@ package com.example.stockapp
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -13,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,9 +38,42 @@ class MainActivity : AppCompatActivity() {
         val stockInfoApi="https://www.alphavantage.co/query?function=OVERVIEW&symbol=$symbol&apikey=C34A4OLXI65MG5IS"
 
 
+        val etSearch = findViewById<AutoCompleteTextView>(R.id.etSearch)
+        val suggestionAdapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line)
+        val suggestionList = mutableListOf<SymbolSuggestion>()
+
+        etSearch.setAdapter(suggestionAdapter)
+
+        etSearch.threshold = 1 // Start suggesting from 1 letter
+
+        etSearch.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val query = s.toString().trim()
+                if (query.length >= 3) {
+                    fetchSuggestions(query, api_key) { suggestions ->
+                        runOnUiThread {
+                            suggestionList.clear()
+                            suggestionList.addAll(suggestions)
+                            val displayList = suggestions.map { "${it.symbol} - ${it.name}" }
+                            suggestionAdapter.clear()
+                            suggestionAdapter.addAll(displayList)
+                            suggestionAdapter.notifyDataSetChanged()
+                            etSearch.showDropDown()
+                        }
+                    }
+                }
+            }
+        })
+
+        etSearch.setOnItemClickListener { _, _, position, _ ->
+            val selected = suggestionList[position]
+            Toast.makeText(this, "Selected: ${selected.symbol}", Toast.LENGTH_SHORT).show()
+            etSearch.setText(selected.symbol)
+        }
+
         lifecycleScope.launch(Dispatchers.IO) {
-            Log.d("Top Gainer", getTopGainers(api_key).toString())
-            Log.d("Top Looser", getTopLosers(api_key).toString())
 
             val gainersAll = getTopGainers(api_key)
             val losersAll = getTopLosers(api_key)
@@ -91,6 +132,33 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+    fun fetchSuggestions(query: String, apiKey: String, callback: (List<SymbolSuggestion>) -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val url = "https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=SAIC&apikey=$apiKey"
+            val client = OkHttpClient()
+            val request = Request.Builder().url(url).build()
+
+            try {
+                val response = client.newCall(request).execute()
+                val body = response.body?.string() ?: return@launch
+                val json = JSONObject(body)
+                val matches = json.optJSONArray("bestMatches") ?: return@launch
+
+                val result = mutableListOf<SymbolSuggestion>()
+                for (i in 0 until matches.length()) {
+                    val obj = matches.getJSONObject(i)
+                    val symbol = obj.optString("1. symbol", "")
+                    val name = obj.optString("2. name", "")
+                    result.add(SymbolSuggestion(symbol, name))
+                }
+                callback(result)
+            } catch (e: Exception) {
+                callback(emptyList())
+            }
+        }
+    }
+
 
     suspend fun getTopGainers(apiKey: String): List<StockData> = withContext(Dispatchers.IO) {
         val url = "https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey=$apiKey"
