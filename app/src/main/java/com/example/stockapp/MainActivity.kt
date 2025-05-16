@@ -98,6 +98,12 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Selected: ${selected.symbol}", Toast.LENGTH_SHORT).show()
             etSearch.setText(selected.symbol)
             saveSymbolToRecentList(selected.symbol)
+            recentAdapter.notifyDataSetChanged()
+            val i=Intent(this@MainActivity,StockInformation::class.java)
+            i.putExtra("symbol",selected.symbol)
+//            i.putExtra("price",stock.price)
+//            i.putExtra("change",stock.change)
+            startActivity(i)
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
