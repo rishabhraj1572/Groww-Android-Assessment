@@ -4,12 +4,18 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.github.mikephil.charting.charts.LineChart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import okhttp3.*
+import java.io.IOException
 
 class StockInformation : AppCompatActivity() {
 
@@ -33,6 +39,8 @@ class StockInformation : AppCompatActivity() {
     private lateinit var divYield: TextView
     private lateinit var beta: TextView
     private lateinit var profitMargin: TextView
+
+    private lateinit var lineChart: LineChart
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,8 +67,8 @@ class StockInformation : AppCompatActivity() {
         beta = findViewById(R.id.beta)
         profitMargin = findViewById(R.id.profitMargin)
 
-        val apiKey = "demo"
-        val symbol = /*intent.getStringExtra("symbol") ?: ""*/ "IBM"
+        val apiKey = "C34A4OLXI65MG5IS"
+        val symbol = intent.getStringExtra("symbol") ?: ""
         val pricePassed = intent.getStringExtra("price") ?: ""
         val changePassed = intent.getStringExtra("change") ?: ""
 
@@ -70,6 +78,58 @@ class StockInformation : AppCompatActivity() {
         lifecycleScope.launch {
             getData(symbol, apiKey)
         }
+
+        lineChart = findViewById(R.id.lineChart)
+        fetchDataAndPlot(symbol,apiKey)
+    }
+
+    private fun fetchDataAndPlot(symbol:String,apiKey:String) {
+        val url = "https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol=$symbol&apikey=$apiKey"
+
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.body?.string()?.let {
+                    val jsonObject = JSONObject(it)
+                    val timeSeries = jsonObject.getJSONObject("Weekly Time Series")
+
+                    val entries = ArrayList<Entry>()
+                    val labels = ArrayList<String>()
+                    var index = 0f
+
+                    val sortedDates = timeSeries.keys().asSequence().toList().sorted()
+
+                    for (date in sortedDates) {
+                        val dataPoint = timeSeries.getJSONObject(date)
+                        val close = dataPoint.getDouble("4. close").toFloat()
+                        entries.add(Entry(index, close))
+                        labels.add(date)
+                        index++
+                    }
+
+                    runOnUiThread {
+                        val dataSet = LineDataSet(entries, "$symbol Weekly Close")
+                        dataSet.color = getColor(R.color.blue)
+                        dataSet.setCircleColor(getColor(R.color.blue))
+                        val lineData = LineData(dataSet)
+
+                        lineChart.data = lineData
+                        lineChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+                        lineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+                        lineChart.xAxis.setDrawLabels(true)
+                        lineChart.axisRight.isEnabled = false
+                        lineChart.description.text = "Weekly Closing Price"
+                        lineChart.invalidate()
+                    }
+                }
+            }
+        })
     }
 
     private suspend fun getData(symbol: String, apiKey: String) = withContext(Dispatchers.IO) {

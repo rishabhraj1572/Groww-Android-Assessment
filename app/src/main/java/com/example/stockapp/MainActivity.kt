@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val api_key="demo"
+        val api_key="C34A4OLXI65MG5IS"
         val symbol="Stock_name"
         val stockInfoApi="https://www.alphavantage.co/query?function=OVERVIEW&symbol=$symbol&apikey=C34A4OLXI65MG5IS"
 
@@ -177,7 +177,7 @@ class MainActivity : AppCompatActivity() {
 
     fun fetchSuggestions(query: String, apiKey: String, callback: (List<SymbolSuggestion>) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
-            val url = "https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=SAIC&apikey=$apiKey"
+            val url = "https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=$query&apikey=$apiKey"
             val client = OkHttpClient()
             val request = Request.Builder().url(url).build()
 
@@ -203,7 +203,7 @@ class MainActivity : AppCompatActivity() {
 
 
     suspend fun getTopGainers(apiKey: String): List<StockData> = withContext(Dispatchers.IO) {
-        val url = "https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey=$apiKey"
+        val url = "https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey=demo"
         val client = OkHttpClient()
         val request = Request.Builder().url(url).build()
 
@@ -228,7 +228,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     suspend fun getTopLosers(apiKey: String): List<StockData> = withContext(Dispatchers.IO) {
-        val url = "https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey=$apiKey"
+        val url = "https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey=demo"
         val client = OkHttpClient()
         val request = Request.Builder().url(url).build()
 
